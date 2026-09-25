@@ -1,0 +1,48 @@
+name: Electricity analytics pipeline
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "20 3 * * *"
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  analytics:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Generate public demo data
+        run: python scripts/generate_demo_data.py
+
+      - name: Build analytics marts
+        run: python analytics/build_marts.py
+
+      - name: Smoke-test outputs
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          expected = [
+              Path("data/processed/interval_usage.parquet"),
+              Path("data/processed/daily_kpis.parquet"),
+              Path("data/processed/hourly_profile.parquet"),
+          ]
+          missing = [str(p) for p in expected if not p.exists()]
+          if missing:
+              raise SystemExit(f"Missing outputs: {missing}")
+          print("Analytics pipeline OK")
+          PY
