@@ -1,0 +1,25 @@
+# Secrets
+.env
+*.pem
+*.key
+
+# Private/raw household data
+data/raw/*
+!data/raw/.gitkeep
+data/private/
+*.db
+*.duckdb
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+
+# Streamlit
+.streamlit/secrets.toml
+
+# OS / IDE
+.DS_Store
+Thumbs.db
+.vscode/
